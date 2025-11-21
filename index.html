@@ -1,0 +1,713 @@
+<!-- Made by Henry Karslake -->
+<!-- Risky Kids Time -->
+
+<!-- If this goes to the owner of risky kids or is being edited by someone else and not me, i will add comments thorugh out the code to say what everything is so it can be edited or viewed -->
+<!-- There is 2 comments which is pretty easy to find, one on line 18 and one on line 89 -->
+<!-- Please credit me, and thank you -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Risky Kids Albury Time</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background: url('background.png') center center / cover no-repeat; /* This is the background, it right now has the albury background but if you swap the image called "background.png" to a different one, the background will automatically change */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.7);
+      z-index: 0;
+    }
+
+    #container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      z-index: 1;
+    }
+
+    #time, #day {
+      display: flex;
+      gap: 5px;
+    }
+
+    #time img, #day img {
+      height: 100px;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    #bottomImage {
+      position: absolute;
+      bottom: 20px;
+      z-index: 1;
+    }
+
+    #bottomImage img {
+      height: 80px;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <div id="time"></div>
+    <div id="day"></div>
+  </div>
+  <div id="bottomImage"><img id="scheduleImage" src="" alt=""></div>
+
+  <script>
+    const charToImage = {
+      '0': 'time/0.png',
+      '1': 'time/1.png',
+      '2': 'time/2.png',
+      '3': 'time/3.png',
+      '4': 'time/4.png',
+      '5': 'time/5.png',
+      '6': 'time/6.png',
+      '7': 'time/7.png',
+      '8': 'time/8.png',
+      '9': 'time/9.png',
+      ':': 'time/colon.png',
+      'A': 'time/am.png',
+      'P': 'time/pm.png',
+      'M': '',
+      ' ': ''
+    };
+    // the other thing you will have to change is this list, it is very long, the albury risky kids was around 500 lines but its pretty easy to figure out, the day is the day, time is 24hr time and the image is the text at the bottom of the screen which is in the "at" folder, you can open the images in file explorer to figure out which is which, and to change them around
+    const schedule = [
+      { day: "sunday", time: "00:00:00", image: "at/at-28.png" },
+      { day: "monday", time: "00:00:00", image: "at/at-28.png" },
+      { day: "monday", time: "9:30:00", image: "at/at-23.png" },
+      { day: "monday", time: "11:30:00", image: "at/at-28.png" },
+      { day: "monday", time: "15:30:00", image: "at/at-13.png" },
+      { day: "monday", time: "15:42:00", image: "at/at-14.png" },
+      { day: "monday", time: "15:45:00", image: "at/at-22.png" },
+      { day: "monday", time: "16:15:00", image: "at/at-13.png" },
+      { day: "monday", time: "16:27:00", image: "at/at-14.png" },
+      { day: "monday", time: "16:30:00", image: "at/at-1.png" },
+      { day: "monday", time: "16:40:00", image: "at/at-2.png" },
+      { day: "monday", time: "16:41:00", image: "at/at-3.png" },
+      { day: "monday", time: "16:42:00", image: "at/at-4.png" },
+      { day: "monday", time: "16:43:00", image: "at/at-5.png" },
+      { day: "monday", time: "16:44:00", image: "at/at-6.png" },
+      { day: "monday", time: "16:47:00", image: "at/at-7.png" },
+      { day: "monday", time: "16:50:00", image: "at/at-8.png" },
+      { day: "monday", time: "16:51:00", image: "at/at-9.png" },
+      { day: "monday", time: "16:55:00", image: "at/at-10.png" },
+      { day: "monday", time: "16:56:00", image: "at/at-3.png" },
+      { day: "monday", time: "16:57:00", image: "at/at-4.png" },
+      { day: "monday", time: "16:58:00", image: "at/at-5.png" },
+      { day: "monday", time: "16:59:00", image: "at/at-6.png" },
+      { day: "monday", time: "17:02:00", image: "at/at-7.png" },
+      { day: "monday", time: "17:05:00", image: "at/at-8.png" },
+      { day: "monday", time: "17:06:00", image: "at/at-9.png" },
+      { day: "monday", time: "17:12:00", image: "at/at-11.png" },
+      { day: "monday", time: "17:15:00", image: "at/at-12.png" },
+      { day: "monday", time: "17:15:30", image: "at/at-13.png" },
+      { day: "monday", time: "17:27:00", image: "at/at-14.png" },
+      { day: "monday", time: "17:30:00", image: "at/at-1.png" },
+      { day: "monday", time: "17:40:00", image: "at/at-2.png" },
+      { day: "monday", time: "17:41:00", image: "at/at-3.png" },
+      { day: "monday", time: "17:42:00", image: "at/at-4.png" },
+      { day: "monday", time: "17:43:00", image: "at/at-5.png" },
+      { day: "monday", time: "17:44:00", image: "at/at-6.png" },
+      { day: "monday", time: "17:47:00", image: "at/at-7.png" },
+      { day: "monday", time: "17:50:00", image: "at/at-8.png" },
+      { day: "monday", time: "17:51:00", image: "at/at-9.png" },
+      { day: "monday", time: "17:55:00", image: "at/at-10.png" },
+      { day: "monday", time: "17:56:00", image: "at/at-3.png" },
+      { day: "monday", time: "17:57:00", image: "at/at-4.png" },
+      { day: "monday", time: "17:58:00", image: "at/at-5.png" },
+      { day: "monday", time: "17:59:00", image: "at/at-6.png" },
+      { day: "monday", time: "18:02:00", image: "at/at-7.png" },
+      { day: "monday", time: "18:05:00", image: "at/at-8.png" },
+      { day: "monday", time: "18:06:00", image: "at/at-9.png" },
+      { day: "monday", time: "18:12:00", image: "at/at-11.png" },
+      { day: "monday", time: "18:15:00", image: "at/at-12.png" },
+      { day: "monday", time: "18:15:30", image: "at/at-13.png" },
+      { day: "monday", time: "18:27:00", image: "at/at-14.png" },
+      { day: "monday", time: "18:30:00", image: "at/at-1.png" },
+      { day: "monday", time: "18:40:00", image: "at/at-2.png" },
+      { day: "monday", time: "18:41:00", image: "at/at-3.png" },
+      { day: "monday", time: "18:42:00", image: "at/at-4.png" },
+      { day: "monday", time: "18:43:00", image: "at/at-5.png" },
+      { day: "monday", time: "18:44:00", image: "at/at-6.png" },
+      { day: "monday", time: "18:47:00", image: "at/at-7.png" },
+      { day: "monday", time: "18:50:00", image: "at/at-8.png" },
+      { day: "monday", time: "18:51:00", image: "at/at-9.png" },
+      { day: "monday", time: "18:55:00", image: "at/at-10.png" },
+      { day: "monday", time: "18:56:00", image: "at/at-3.png" },
+      { day: "monday", time: "18:57:00", image: "at/at-4.png" },
+      { day: "monday", time: "18:58:00", image: "at/at-5.png" },
+      { day: "monday", time: "18:59:00", image: "at/at-6.png" },
+      { day: "monday", time: "19:02:00", image: "at/at-7.png" },
+      { day: "monday", time: "19:05:00", image: "at/at-8.png" },
+      { day: "monday", time: "19:06:00", image: "at/at-9.png" },
+      { day: "monday", time: "19:12:00", image: "at/at-11.png" },
+      { day: "monday", time: "19:15:00", image: "at/at-12.png" },
+      { day: "monday", time: "19:15:30", image: "at/at-13.png" },
+      { day: "monday", time: "19:27:00", image: "at/at-14.png" },
+      { day: "monday", time: "19:30:00", image: "at/at-15.png" },
+      { day: "monday", time: "19:35:00", image: "at/at-16.png" },
+      { day: "monday", time: "19:40:00", image: "at/at-17.png" },
+      { day: "monday", time: "19:41:00", image: "at/at-3.png" },
+      { day: "monday", time: "19:42:00", image: "at/at-4.png" },
+      { day: "monday", time: "19:43:00", image: "at/at-5.png" },
+      { day: "monday", time: "19:44:00", image: "at/at-25.png" },
+      { day: "monday", time: "19:45:00", image: "at/at-24.png" },
+      { day: "monday", time: "19:46:00", image: "at/at-26.png" },
+      { day: "monday", time: "19:47:00", image: "at/at-24.png" },
+      { day: "monday", time: "19:48:00", image: "at/at-27.png" },
+      { day: "monday", time: "19:49:00", image: "at/at-7.png" },
+      { day: "monday", time: "19:54:00", image: "at/at-8.png" },
+      { day: "monday", time: "19:55:00", image: "at/at-9.png" },
+      { day: "monday", time: "20:00:00", image: "at/at-17.png" },
+      { day: "monday", time: "20:01:00", image: "at/at-3.png" },
+      { day: "monday", time: "20:02:00", image: "at/at-4.png" },
+      { day: "monday", time: "20:03:00", image: "at/at-5.png" },
+      { day: "monday", time: "20:04:00", image: "at/at-25.png" },
+      { day: "monday", time: "20:05:00", image: "at/at-24.png" },
+      { day: "monday", time: "20:06:00", image: "at/at-26.png" },
+      { day: "monday", time: "20:07:00", image: "at/at-24.png" },
+      { day: "monday", time: "20:08:00", image: "at/at-27.png" },
+      { day: "monday", time: "20:09:00", image: "at/at-7.png" },
+      { day: "monday", time: "20:14:00", image: "at/at-8.png" },
+      { day: "monday", time: "20:15:00", image: "at/at-18.png" },
+      { day: "monday", time: "20:25:00", image: "at/at-11.png" },
+      { day: "monday", time: "20:30:00", image: "at/at-28.png" },
+      { day: "tuesday", time: "00:00:00", image: "at/at-13.png" },
+      { day: "tuesday", time: "15:15:30", image: "at/at-13.png" },
+      { day: "tuesday", time: "15:27:00", image: "at/at-14.png" },
+      { day: "tuesday", time: "15:30:00", image: "at/at-13.png" },
+      { day: "tuesday", time: "15:42:00", image: "at/at-14.png" },
+      { day: "tuesday", time: "15:45:00", image: "at/at-22.png" },
+      { day: "tuesday", time: "16:15:00", image: "at/at-13.png" },
+      { day: "tuesday", time: "16:27:00", image: "at/at-14.png" },
+      { day: "tuesday", time: "16:30:00", image: "at/at-1.png" },
+      { day: "tuesday", time: "16:40:00", image: "at/at-2.png" },
+      { day: "tuesday", time: "16:41:00", image: "at/at-3.png" },
+      { day: "tuesday", time: "16:42:00", image: "at/at-4.png" },
+      { day: "tuesday", time: "16:43:00", image: "at/at-5.png" },
+      { day: "tuesday", time: "16:44:00", image: "at/at-6.png" },
+      { day: "tuesday", time: "16:47:00", image: "at/at-7.png" },
+      { day: "tuesday", time: "16:50:00", image: "at/at-8.png" },
+      { day: "tuesday", time: "16:51:00", image: "at/at-9.png" },
+      { day: "tuesday", time: "16:55:00", image: "at/at-10.png" },
+      { day: "tuesday", time: "16:56:00", image: "at/at-3.png" },
+      { day: "tuesday", time: "16:57:00", image: "at/at-4.png" },
+      { day: "tuesday", time: "16:58:00", image: "at/at-5.png" },
+      { day: "tuesday", time: "16:59:00", image: "at/at-6.png" },
+      { day: "tuesday", time: "17:02:00", image: "at/at-7.png" },
+      { day: "tuesday", time: "17:05:00", image: "at/at-8.png" },
+      { day: "tuesday", time: "17:06:00", image: "at/at-9.png" },
+      { day: "tuesday", time: "17:12:00", image: "at/at-11.png" },
+      { day: "tuesday", time: "17:15:00", image: "at/at-12.png" },
+      { day: "tuesday", time: "17:15:30", image: "at/at-13.png" },
+      { day: "tuesday", time: "17:27:00", image: "at/at-14.png" },
+      { day: "tuesday", time: "17:30:00", image: "at/at-1.png" },
+      { day: "tuesday", time: "17:40:00", image: "at/at-2.png" },
+      { day: "tuesday", time: "17:41:00", image: "at/at-3.png" },
+      { day: "tuesday", time: "17:42:00", image: "at/at-4.png" },
+      { day: "tuesday", time: "17:43:00", image: "at/at-5.png" },
+      { day: "tuesday", time: "17:44:00", image: "at/at-6.png" },
+      { day: "tuesday", time: "17:47:00", image: "at/at-7.png" },
+      { day: "tuesday", time: "17:50:00", image: "at/at-8.png" },
+      { day: "tuesday", time: "17:51:00", image: "at/at-9.png" },
+      { day: "tuesday", time: "17:55:00", image: "at/at-10.png" },
+      { day: "tuesday", time: "17:56:00", image: "at/at-3.png" },
+      { day: "tuesday", time: "17:57:00", image: "at/at-4.png" },
+      { day: "tuesday", time: "17:58:00", image: "at/at-5.png" },
+      { day: "tuesday", time: "17:59:00", image: "at/at-6.png" },
+      { day: "tuesday", time: "18:02:00", image: "at/at-7.png" },
+      { day: "tuesday", time: "18:05:00", image: "at/at-8.png" },
+      { day: "tuesday", time: "18:06:00", image: "at/at-9.png" },
+      { day: "tuesday", time: "18:12:00", image: "at/at-11.png" },
+      { day: "tuesday", time: "18:15:00", image: "at/at-12.png" },
+      { day: "tuesday", time: "18:15:30", image: "at/at-13.png" },
+      { day: "tuesday", time: "18:27:00", image: "at/at-14.png" },
+      { day: "tuesday", time: "18:30:00", image: "at/at-19.png" }, 
+      { day: "tuesday", time: "18:40:00", image: "at/at-2.png" }, 
+      { day: "tuesday", time: "18:41:00", image: "at/at-3.png" }, 
+      { day: "tuesday", time: "18:42:00", image: "at/at-4.png" }, 
+      { day: "tuesday", time: "18:43:00", image: "at/at-5.png" }, 
+      { day: "tuesday", time: "18:44:00", image: "at/at-6.png" }, 
+      { day: "tuesday", time: "18:47:00", image: "at/at-7.png" }, 
+      { day: "tuesday", time: "18:50:00", image: "at/at-20.png" }, 
+      { day: "tuesday", time: "18:52:00", image: "at/at-21.png" }, 
+      { day: "tuesday", time: "18:55:00", image: "at/at-30.png" }, 
+      { day: "tuesday", time: "18:56:00", image: "at/at-31.png" }, 
+      { day: "tuesday", time: "18:57:00", image: "at/at-32.png" }, 
+      { day: "tuesday", time: "18:58:00", image: "at/at-33.png" }, 
+      { day: "tuesday", time: "18:59:00", image: "at/at-34.png" }, 
+      { day: "tuesday", time: "19:02:00", image: "at/at-35.png" }, 
+      { day: "tuesday", time: "19:05:00", image: "at/at-36.png" }, 
+      { day: "tuesday", time: "19:06:00", image: "at/at-21.png" }, 
+      { day: "tuesday", time: "19:10:00", image: "at/at-15.png" }, 
+      { day: "tuesday", time: "19:15:00", image: "at/at-12.png" },
+      { day: "tuesday", time: "19:15:30", image: "at/at-13.png" },
+      { day: "tuesday", time: "19:27:00", image: "at/at-14.png" },
+      { day: "tuesday", time: "19:30:00", image: "at/at-1.png" },
+      { day: "tuesday", time: "19:40:00", image: "at/at-2.png" },
+      { day: "tuesday", time: "19:41:00", image: "at/at-3.png" },
+      { day: "tuesday", time: "19:42:00", image: "at/at-4.png" },
+      { day: "tuesday", time: "19:43:00", image: "at/at-5.png" },
+      { day: "tuesday", time: "19:44:00", image: "at/at-6.png" },
+      { day: "tuesday", time: "19:47:00", image: "at/at-7.png" },
+      { day: "tuesday", time: "19:50:00", image: "at/at-8.png" },
+      { day: "tuesday", time: "19:51:00", image: "at/at-9.png" },
+      { day: "tuesday", time: "19:55:00", image: "at/at-10.png" },
+      { day: "tuesday", time: "19:56:00", image: "at/at-3.png" },
+      { day: "tuesday", time: "19:57:00", image: "at/at-4.png" },
+      { day: "tuesday", time: "19:58:00", image: "at/at-5.png" },
+      { day: "tuesday", time: "19:59:00", image: "at/at-6.png" },
+      { day: "tuesday", time: "20:02:00", image: "at/at-7.png" },
+      { day: "tuesday", time: "20:05:00", image: "at/at-8.png" },
+      { day: "tuesday", time: "20:06:00", image: "at/at-9.png" },
+      { day: "tuesday", time: "20:12:00", image: "at/at-11.png" },
+      { day: "tuesday", time: "20:15:00", image: "at/at-12.png" },
+      { day: "tuesday", time: "20:15:30", image: "at/at-28.png" },
+      { day: "wednesday", time: "00:00:00", image: "at/at-28.png" },
+      { day: "wednesday", time: "9:30:00", image: "at/at-23.png" },
+      { day: "wednesday", time: "10:30:00", image: "at/at-28.png" },
+      { day: "wednesday", time: "16:15:00", image: "at/at-13.png" },
+      { day: "wednesday", time: "16:27:00", image: "at/at-14.png" },
+      { day: "wednesday", time: "16:30:00", image: "at/at-1.png" },
+      { day: "wednesday", time: "16:40:00", image: "at/at-2.png" },
+      { day: "wednesday", time: "16:41:00", image: "at/at-3.png" },
+      { day: "wednesday", time: "16:42:00", image: "at/at-4.png" },
+      { day: "wednesday", time: "16:43:00", image: "at/at-5.png" },
+      { day: "wednesday", time: "16:44:00", image: "at/at-6.png" },
+      { day: "wednesday", time: "16:47:00", image: "at/at-7.png" },
+      { day: "wednesday", time: "16:50:00", image: "at/at-8.png" },
+      { day: "wednesday", time: "16:51:00", image: "at/at-9.png" },
+      { day: "wednesday", time: "16:55:00", image: "at/at-10.png" },
+      { day: "wednesday", time: "16:56:00", image: "at/at-3.png" },
+      { day: "wednesday", time: "16:57:00", image: "at/at-4.png" },
+      { day: "wednesday", time: "16:58:00", image: "at/at-5.png" },
+      { day: "wednesday", time: "16:59:00", image: "at/at-6.png" },
+      { day: "wednesday", time: "17:02:00", image: "at/at-7.png" },
+      { day: "wednesday", time: "17:05:00", image: "at/at-8.png" },
+      { day: "wednesday", time: "17:06:00", image: "at/at-9.png" },
+      { day: "wednesday", time: "17:12:00", image: "at/at-11.png" },
+      { day: "wednesday", time: "17:15:00", image: "at/at-12.png" },
+      { day: "wednesday", time: "17:15:30", image: "at/at-13.png" },
+      { day: "wednesday", time: "17:27:00", image: "at/at-14.png" },
+      { day: "wednesday", time: "17:30:00", image: "at/at-1.png" },
+      { day: "wednesday", time: "17:40:00", image: "at/at-2.png" },
+      { day: "wednesday", time: "17:41:00", image: "at/at-3.png" },
+      { day: "wednesday", time: "17:42:00", image: "at/at-4.png" },
+      { day: "wednesday", time: "17:43:00", image: "at/at-5.png" },
+      { day: "wednesday", time: "17:44:00", image: "at/at-6.png" },
+      { day: "wednesday", time: "17:47:00", image: "at/at-7.png" },
+      { day: "wednesday", time: "17:50:00", image: "at/at-8.png" },
+      { day: "wednesday", time: "17:51:00", image: "at/at-9.png" },
+      { day: "wednesday", time: "17:55:00", image: "at/at-10.png" },
+      { day: "wednesday", time: "17:56:00", image: "at/at-3.png" },
+      { day: "wednesday", time: "17:57:00", image: "at/at-4.png" },
+      { day: "wednesday", time: "17:58:00", image: "at/at-5.png" },
+      { day: "wednesday", time: "17:59:00", image: "at/at-6.png" },
+      { day: "wednesday", time: "18:02:00", image: "at/at-7.png" },
+      { day: "wednesday", time: "18:05:00", image: "at/at-8.png" },
+      { day: "wednesday", time: "18:06:00", image: "at/at-9.png" },
+      { day: "wednesday", time: "18:12:00", image: "at/at-11.png" },
+      { day: "wednesday", time: "18:15:00", image: "at/at-12.png" },
+      { day: "wednesday", time: "18:15:30", image: "at/at-13.png" },
+      { day: "wednesday", time: "18:27:00", image: "at/at-14.png" },
+      { day: "wednesday", time: "18:30:00", image: "at/at-1.png" },
+      { day: "wednesday", time: "18:40:00", image: "at/at-2.png" },
+      { day: "wednesday", time: "18:41:00", image: "at/at-3.png" },
+      { day: "wednesday", time: "18:42:00", image: "at/at-4.png" },
+      { day: "wednesday", time: "18:43:00", image: "at/at-5.png" },
+      { day: "wednesday", time: "18:44:00", image: "at/at-6.png" },
+      { day: "wednesday", time: "18:47:00", image: "at/at-7.png" },
+      { day: "wednesday", time: "18:50:00", image: "at/at-8.png" },
+      { day: "wednesday", time: "18:51:00", image: "at/at-9.png" },
+      { day: "wednesday", time: "18:55:00", image: "at/at-10.png" },
+      { day: "wednesday", time: "18:56:00", image: "at/at-3.png" },
+      { day: "wednesday", time: "18:57:00", image: "at/at-4.png" },
+      { day: "wednesday", time: "18:58:00", image: "at/at-5.png" },
+      { day: "wednesday", time: "18:59:00", image: "at/at-6.png" },
+      { day: "wednesday", time: "19:02:00", image: "at/at-7.png" },
+      { day: "wednesday", time: "19:05:00", image: "at/at-8.png" },
+      { day: "wednesday", time: "19:06:00", image: "at/at-9.png" },
+      { day: "wednesday", time: "19:12:00", image: "at/at-11.png" },
+      { day: "wednesday", time: "19:15:00", image: "at/at-12.png" },
+      { day: "wednesday", time: "19:15:30", image: "at/at-13.png" },
+      { day: "wednesday", time: "19:27:00", image: "at/at-14.png" },
+      { day: "wednesday", time: "19:30:00", image: "at/at-37.png" },
+      { day: "wednesday", time: "20:30:00", image: "at/at-28.png" },
+      { day: "thursday", time: "00:00:00", image: "at/at-13.png" },
+      { day: "thursday", time: "15:15:30", image: "at/at-13.png" },
+      { day: "thursday", time: "15:27:00", image: "at/at-14.png" },
+      { day: "thursday", time: "15:30:00", image: "at/at-13.png" },
+      { day: "thursday", time: "15:42:00", image: "at/at-14.png" },
+      { day: "thursday", time: "15:45:00", image: "at/at-22.png" },
+      { day: "thursday", time: "16:15:00", image: "at/at-13.png" },
+      { day: "thursday", time: "16:27:00", image: "at/at-14.png" },
+      { day: "thursday", time: "16:30:00", image: "at/at-1.png" },
+      { day: "thursday", time: "16:40:00", image: "at/at-2.png" },
+      { day: "thursday", time: "16:41:00", image: "at/at-3.png" },
+      { day: "thursday", time: "16:42:00", image: "at/at-4.png" },
+      { day: "thursday", time: "16:43:00", image: "at/at-5.png" },
+      { day: "thursday", time: "16:44:00", image: "at/at-6.png" },
+      { day: "thursday", time: "16:47:00", image: "at/at-7.png" },
+      { day: "thursday", time: "16:50:00", image: "at/at-8.png" },
+      { day: "thursday", time: "16:51:00", image: "at/at-9.png" },
+      { day: "thursday", time: "16:55:00", image: "at/at-10.png" },
+      { day: "thursday", time: "16:56:00", image: "at/at-3.png" },
+      { day: "thursday", time: "16:57:00", image: "at/at-4.png" },
+      { day: "thursday", time: "16:58:00", image: "at/at-5.png" },
+      { day: "thursday", time: "16:59:00", image: "at/at-6.png" },
+      { day: "thursday", time: "17:02:00", image: "at/at-7.png" },
+      { day: "thursday", time: "17:05:00", image: "at/at-8.png" },
+      { day: "thursday", time: "17:06:00", image: "at/at-9.png" },
+      { day: "thursday", time: "17:12:00", image: "at/at-11.png" },
+      { day: "thursday", time: "17:15:00", image: "at/at-12.png" },
+      { day: "thursday", time: "17:15:30", image: "at/at-13.png" },
+      { day: "thursday", time: "17:27:00", image: "at/at-14.png" },
+      { day: "thursday", time: "17:30:00", image: "at/at-1.png" },
+      { day: "thursday", time: "17:40:00", image: "at/at-2.png" },
+      { day: "thursday", time: "17:41:00", image: "at/at-3.png" },
+      { day: "thursday", time: "17:42:00", image: "at/at-4.png" },
+      { day: "thursday", time: "17:43:00", image: "at/at-5.png" },
+      { day: "thursday", time: "17:44:00", image: "at/at-6.png" },
+      { day: "thursday", time: "17:47:00", image: "at/at-7.png" },
+      { day: "thursday", time: "17:50:00", image: "at/at-8.png" },
+      { day: "thursday", time: "17:51:00", image: "at/at-9.png" },
+      { day: "thursday", time: "17:55:00", image: "at/at-10.png" },
+      { day: "thursday", time: "17:56:00", image: "at/at-3.png" },
+      { day: "thursday", time: "17:57:00", image: "at/at-4.png" },
+      { day: "thursday", time: "17:58:00", image: "at/at-5.png" },
+      { day: "thursday", time: "17:59:00", image: "at/at-6.png" },
+      { day: "thursday", time: "18:02:00", image: "at/at-7.png" },
+      { day: "thursday", time: "18:05:00", image: "at/at-8.png" },
+      { day: "thursday", time: "18:06:00", image: "at/at-9.png" },
+      { day: "thursday", time: "18:12:00", image: "at/at-11.png" },
+      { day: "thursday", time: "18:15:00", image: "at/at-12.png" },
+      { day: "thursday", time: "18:15:30", image: "at/at-13.png" },
+      { day: "thursday", time: "18:27:00", image: "at/at-14.png" },
+      { day: "thursday", time: "18:30:00", image: "at/at-19.png" }, 
+      { day: "thursday", time: "18:40:00", image: "at/at-2.png" }, 
+      { day: "thursday", time: "18:41:00", image: "at/at-3.png" }, 
+      { day: "thursday", time: "18:42:00", image: "at/at-4.png" }, 
+      { day: "thursday", time: "18:43:00", image: "at/at-5.png" }, 
+      { day: "thursday", time: "18:44:00", image: "at/at-6.png" }, 
+      { day: "thursday", time: "18:47:00", image: "at/at-7.png" }, 
+      { day: "thursday", time: "18:50:00", image: "at/at-20.png" }, 
+      { day: "thursday", time: "18:52:00", image: "at/at-21.png" }, 
+      { day: "thursday", time: "18:55:00", image: "at/at-30.png" }, 
+      { day: "thursday", time: "18:56:00", image: "at/at-31.png" }, 
+      { day: "thursday", time: "18:57:00", image: "at/at-32.png" }, 
+      { day: "thursday", time: "18:58:00", image: "at/at-33.png" }, 
+      { day: "thursday", time: "18:59:00", image: "at/at-34.png" }, 
+      { day: "thursday", time: "19:02:00", image: "at/at-35.png" }, 
+      { day: "thursday", time: "19:05:00", image: "at/at-36.png" }, 
+      { day: "thursday", time: "19:06:00", image: "at/at-21.png" }, 
+      { day: "thursday", time: "19:10:00", image: "at/at-15.png" }, 
+      { day: "thursday", time: "19:15:00", image: "at/at-12.png" },
+      { day: "thursday", time: "19:15:30", image: "at/at-13.png" },
+      { day: "thursday", time: "19:27:00", image: "at/at-14.png" },
+      { day: "thursday", time: "19:30:00", image: "at/at-1.png" },
+      { day: "thursday", time: "19:40:00", image: "at/at-2.png" },
+      { day: "thursday", time: "19:41:00", image: "at/at-3.png" },
+      { day: "thursday", time: "19:42:00", image: "at/at-4.png" },
+      { day: "thursday", time: "19:43:00", image: "at/at-5.png" },
+      { day: "thursday", time: "19:44:00", image: "at/at-6.png" },
+      { day: "thursday", time: "19:47:00", image: "at/at-7.png" },
+      { day: "thursday", time: "19:50:00", image: "at/at-8.png" },
+      { day: "thursday", time: "19:51:00", image: "at/at-9.png" },
+      { day: "thursday", time: "19:55:00", image: "at/at-10.png" },
+      { day: "thursday", time: "19:56:00", image: "at/at-3.png" },
+      { day: "thursday", time: "19:57:00", image: "at/at-4.png" },
+      { day: "thursday", time: "19:58:00", image: "at/at-5.png" },
+      { day: "thursday", time: "19:59:00", image: "at/at-6.png" },
+      { day: "thursday", time: "20:02:00", image: "at/at-7.png" },
+      { day: "thursday", time: "20:05:00", image: "at/at-8.png" },
+      { day: "thursday", time: "20:06:00", image: "at/at-9.png" },
+      { day: "thursday", time: "20:12:00", image: "at/at-11.png" },
+      { day: "thursday", time: "20:15:00", image: "at/at-12.png" },
+      { day: "thursday", time: "20:15:30", image: "at/at-28.png" },
+      { day: "friday", time: "00:00:00", image: "at/at-28.png" },
+      { day: "friday", time: "9:30:00", image: "at/at-23.png" },
+      { day: "friday", time: "11:30:00", image: "at/at-28.png" },
+      { day: "friday", time: "16:00:00", image: "at/at-37.png" },
+      { day: "friday", time: "18:30:00", image: "at/at-28.png" },
+      { day: "saturday", time: "00:00:00", image: "at/at-28.png" },
+      { day: "saturday", time: "8:45:00", image: "at/at-13.png" },
+      { day: "saturday", time: "8:57:00", image: "at/at-14.png" },
+      { day: "saturday", time: "9:00:00", image: "at/at-19.png" }, 
+      { day: "saturday", time: "9:10:00", image: "at/at-2.png" }, 
+      { day: "saturday", time: "9:11:00", image: "at/at-3.png" }, 
+      { day: "saturday", time: "9:12:00", image: "at/at-4.png" }, 
+      { day: "saturday", time: "9:13:00", image: "at/at-5.png" }, 
+      { day: "saturday", time: "9:14:00", image: "at/at-6.png" }, 
+      { day: "saturday", time: "9:17:00", image: "at/at-7.png" }, 
+      { day: "saturday", time: "9:20:00", image: "at/at-20.png" }, 
+      { day: "saturday", time: "9:22:00", image: "at/at-21.png" }, 
+      { day: "saturday", time: "9:25:00", image: "at/at-30.png" }, 
+      { day: "saturday", time: "9:26:00", image: "at/at-31.png" }, 
+      { day: "saturday", time: "9:27:00", image: "at/at-32.png" }, 
+      { day: "saturday", time: "9:28:00", image: "at/at-33.png" }, 
+      { day: "saturday", time: "9:29:00", image: "at/at-34.png" }, 
+      { day: "saturday", time: "9:32:00", image: "at/at-35.png" }, 
+      { day: "saturday", time: "9:35:00", image: "at/at-36.png" }, 
+      { day: "saturday", time: "9:36:00", image: "at/at-21.png" }, 
+      { day: "saturday", time: "9:40:00", image: "at/at-15.png" }, 
+      { day: "saturday", time: "9:45:00", image: "at/at-12.png" },
+      { day: "saturday", time: "9:45:00", image: "at/at-13.png" },
+      { day: "saturday", time: "9:57:00", image: "at/at-14.png" },
+      { day: "saturday", time: "10:00:00", image: "at/at-19.png" }, 
+      { day: "saturday", time: "10:10:00", image: "at/at-2.png" }, 
+      { day: "saturday", time: "10:11:00", image: "at/at-3.png" }, 
+      { day: "saturday", time: "10:12:00", image: "at/at-4.png" }, 
+      { day: "saturday", time: "10:13:00", image: "at/at-5.png" }, 
+      { day: "saturday", time: "10:14:00", image: "at/at-6.png" }, 
+      { day: "saturday", time: "10:17:00", image: "at/at-7.png" }, 
+      { day: "saturday", time: "10:20:00", image: "at/at-20.png" }, 
+      { day: "saturday", time: "10:22:00", image: "at/at-21.png" }, 
+      { day: "saturday", time: "10:25:00", image: "at/at-30.png" }, 
+      { day: "saturday", time: "10:26:00", image: "at/at-31.png" }, 
+      { day: "saturday", time: "10:27:00", image: "at/at-32.png" }, 
+      { day: "saturday", time: "10:28:00", image: "at/at-33.png" }, 
+      { day: "saturday", time: "10:29:00", image: "at/at-34.png" }, 
+      { day: "saturday", time: "10:32:00", image: "at/at-35.png" }, 
+      { day: "saturday", time: "10:35:00", image: "at/at-36.png" }, 
+      { day: "saturday", time: "10:36:00", image: "at/at-21.png" }, 
+      { day: "saturday", time: "10:40:00", image: "at/at-15.png" }, 
+      { day: "saturday", time: "10:45:00", image: "at/at-12.png" },
+      { day: "saturday", time: "10:45:30", image: "at/at-13.png" },
+      { day: "saturday", time: "10:57:00", image: "at/at-14.png" },
+      { day: "saturday", time: "11:00:00", image: "at/at-19.png" }, 
+      { day: "saturday", time: "11:10:00", image: "at/at-2.png" }, 
+      { day: "saturday", time: "11:11:00", image: "at/at-3.png" }, 
+      { day: "saturday", time: "11:12:00", image: "at/at-4.png" }, 
+      { day: "saturday", time: "11:13:00", image: "at/at-5.png" }, 
+      { day: "saturday", time: "11:14:00", image: "at/at-6.png" }, 
+      { day: "saturday", time: "11:17:00", image: "at/at-7.png" }, 
+      { day: "saturday", time: "11:20:00", image: "at/at-20.png" }, 
+      { day: "saturday", time: "11:22:00", image: "at/at-21.png" }, 
+      { day: "saturday", time: "11:25:00", image: "at/at-30.png" }, 
+      { day: "saturday", time: "11:26:00", image: "at/at-31.png" }, 
+      { day: "saturday", time: "11:27:00", image: "at/at-32.png" }, 
+      { day: "saturday", time: "11:28:00", image: "at/at-33.png" }, 
+      { day: "saturday", time: "11:29:00", image: "at/at-34.png" }, 
+      { day: "saturday", time: "11:32:00", image: "at/at-35.png" }, 
+      { day: "saturday", time: "11:35:00", image: "at/at-36.png" }, 
+      { day: "saturday", time: "11:36:00", image: "at/at-21.png" }, 
+      { day: "saturday", time: "11:40:00", image: "at/at-15.png" }, 
+      { day: "saturday", time: "11:45:00", image: "at/at-12.png" },
+      { day: "saturday", time: "11:45:30", image: "at/at-39.png" },
+      { day: "saturday", time: "12:15:00", image: "at/at-13.png" },
+      { day: "saturday", time: "12:27:00", image: "at/at-14.png" },
+      { day: "saturday", time: "12:30:00", image: "at/at-1.png" },
+      { day: "saturday", time: "12:40:00", image: "at/at-2.png" },
+      { day: "saturday", time: "12:41:00", image: "at/at-3.png" },
+      { day: "saturday", time: "12:42:00", image: "at/at-4.png" },
+      { day: "saturday", time: "12:43:00", image: "at/at-5.png" },
+      { day: "saturday", time: "12:44:00", image: "at/at-6.png" },
+      { day: "saturday", time: "12:47:00", image: "at/at-7.png" },
+      { day: "saturday", time: "12:50:00", image: "at/at-8.png" },
+      { day: "saturday", time: "12:51:00", image: "at/at-9.png" },
+      { day: "saturday", time: "12:55:00", image: "at/at-10.png" },
+      { day: "saturday", time: "12:56:00", image: "at/at-3.png" },
+      { day: "saturday", time: "12:57:00", image: "at/at-4.png" },
+      { day: "saturday", time: "12:58:00", image: "at/at-5.png" },
+      { day: "saturday", time: "12:59:00", image: "at/at-6.png" },
+      { day: "saturday", time: "13:02:00", image: "at/at-7.png" },
+      { day: "saturday", time: "13:05:00", image: "at/at-8.png" },
+      { day: "saturday", time: "13:06:00", image: "at/at-9.png" },
+      { day: "saturday", time: "13:12:00", image: "at/at-11.png" },
+      { day: "saturday", time: "13:15:00", image: "at/at-12.png" },
+      { day: "saturday", time: "13:15:30", image: "at/at-13.png" },
+      { day: "saturday", time: "13:27:00", image: "at/at-14.png" },
+      { day: "saturday", time: "13:30:00", image: "at/at-1.png" },
+      { day: "saturday", time: "13:40:00", image: "at/at-2.png" },
+      { day: "saturday", time: "13:41:00", image: "at/at-3.png" },
+      { day: "saturday", time: "13:42:00", image: "at/at-4.png" },
+      { day: "saturday", time: "13:43:00", image: "at/at-5.png" },
+      { day: "saturday", time: "13:44:00", image: "at/at-6.png" },
+      { day: "saturday", time: "13:47:00", image: "at/at-7.png" },
+      { day: "saturday", time: "13:50:00", image: "at/at-8.png" },
+      { day: "saturday", time: "13:51:00", image: "at/at-9.png" },
+      { day: "saturday", time: "13:55:00", image: "at/at-10.png" },
+      { day: "saturday", time: "13:56:00", image: "at/at-3.png" },
+      { day: "saturday", time: "13:57:00", image: "at/at-4.png" },
+      { day: "saturday", time: "13:58:00", image: "at/at-5.png" },
+      { day: "saturday", time: "13:59:00", image: "at/at-6.png" },
+      { day: "saturday", time: "14:02:00", image: "at/at-7.png" },
+      { day: "saturday", time: "14:05:00", image: "at/at-8.png" },
+      { day: "saturday", time: "14:06:00", image: "at/at-9.png" },
+      { day: "saturday", time: "14:12:00", image: "at/at-11.png" },
+      { day: "saturday", time: "14:15:00", image: "at/at-12.png" },
+      { day: "saturday", time: "14:15:30", image: "at/at-13.png" },
+      { day: "saturday", time: "14:27:00", image: "at/at-14.png" },
+      { day: "saturday", time: "14:30:00", image: "at/at-15.png" },
+      { day: "saturday", time: "14:35:00", image: "at/at-16.png" },
+      { day: "saturday", time: "14:40:00", image: "at/at-17.png" },
+      { day: "saturday", time: "14:41:00", image: "at/at-3.png" },
+      { day: "saturday", time: "14:42:00", image: "at/at-4.png" },
+      { day: "saturday", time: "14:43:00", image: "at/at-5.png" },
+      { day: "saturday", time: "14:44:00", image: "at/at-25.png" },
+      { day: "saturday", time: "14:45:00", image: "at/at-24.png" },
+      { day: "saturday", time: "14:46:00", image: "at/at-26.png" },
+      { day: "saturday", time: "14:47:00", image: "at/at-24.png" },
+      { day: "saturday", time: "14:48:00", image: "at/at-27.png" },
+      { day: "saturday", time: "14:49:00", image: "at/at-7.png" },
+      { day: "saturday", time: "14:54:00", image: "at/at-8.png" },
+      { day: "saturday", time: "14:55:00", image: "at/at-9.png" },
+      { day: "saturday", time: "15:00:00", image: "at/at-17.png" },
+      { day: "saturday", time: "15:01:00", image: "at/at-3.png" },
+      { day: "saturday", time: "15:02:00", image: "at/at-4.png" },
+      { day: "saturday", time: "15:03:00", image: "at/at-5.png" },
+      { day: "saturday", time: "15:04:00", image: "at/at-25.png" },
+      { day: "saturday", time: "15:05:00", image: "at/at-24.png" },
+      { day: "saturday", time: "15:06:00", image: "at/at-26.png" },
+      { day: "saturday", time: "15:07:00", image: "at/at-24.png" },
+      { day: "saturday", time: "15:08:00", image: "at/at-27.png" },
+      { day: "saturday", time: "15:09:00", image: "at/at-7.png" },
+      { day: "saturday", time: "15:14:00", image: "at/at-8.png" },
+      { day: "saturday", time: "15:15:00", image: "at/at-18.png" },
+      { day: "saturday", time: "15:25:00", image: "at/at-11.png" },
+      { day: "saturday", time: "15:30:00", image: "at/at-28.png" },
+    ];
+
+    function updateTime() {
+      const now = new Date();
+
+      let hours = now.getHours();
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const seconds = now.getSeconds().toString().padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12;
+
+      const timeStr = `${hours}:${minutes}:${seconds} ${ampm}`;
+      const timeDiv = document.getElementById('time');
+      timeDiv.innerHTML = '';
+      for (const char of timeStr) {
+        if (!charToImage[char]) continue;
+        const img = document.createElement('img');
+        img.src = charToImage[char];
+        img.alt = char;
+        timeDiv.appendChild(img);
+      }
+
+      const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const dayName = days[now.getDay()];
+      const dayDiv = document.getElementById('day');
+      dayDiv.innerHTML = '';
+
+      const dayImg = document.createElement('img');
+      dayImg.src = `day/${dayName}.png`;
+      dayImg.alt = dayName;
+      dayDiv.appendChild(dayImg);
+
+      updateScheduledImage(now);
+    }
+
+    function updateScheduledImage(now) {
+  const currentDayIndex = now.getDay(); 
+  const currentSeconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+  const currentTimestamp = currentDayIndex * 86400 + currentSeconds;
+
+  let latestMatch = null;
+  let latestTimestamp = -1;
+
+  for (const entry of schedule) {
+    const entryDayIndex = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].indexOf(entry.day);
+    const [h, m, s] = entry.time.split(':').map(Number);
+    const entryTimestamp = entryDayIndex * 86400 + h * 3600 + m * 60 + s;
+
+    if (entryTimestamp <= currentTimestamp && entryTimestamp > latestTimestamp) {
+      latestMatch = entry;
+      latestTimestamp = entryTimestamp;
+    }
+  }
+
+  const imgElement = document.getElementById('scheduleImage');
+  if (latestMatch) {
+    imgElement.src = latestMatch.image;
+    imgElement.style.display = 'block';
+  } else {
+    imgElement.style.display = 'none';
+  }
+}
+let testMode = false;
+  let fakeTime = null;
+
+  function updateTime() {
+    const now = testMode ? new Date(fakeTime.getTime() + (Date.now() - fakeTime.setAt)) : new Date();
+
+    let hours = now.getHours();
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const seconds = now.getSeconds().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+
+    const timeStr = `${hours}:${minutes}:${seconds} ${ampm}`;
+    const timeDiv = document.getElementById('time');
+    timeDiv.innerHTML = '';
+    for (const char of timeStr) {
+      if (!charToImage[char]) continue;
+      const img = document.createElement('img');
+      img.src = charToImage[char];
+      img.alt = char;
+      timeDiv.appendChild(img);
+    }
+
+    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const dayName = days[now.getDay()];
+    const dayDiv = document.getElementById('day');
+    dayDiv.innerHTML = '';
+
+    const dayImg = document.createElement('img');
+    dayImg.src = `day/${dayName}.png`;
+    dayImg.alt = dayName;
+    dayDiv.appendChild(dayImg);
+
+    updateScheduledImage(now);
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key.toLowerCase() === 't') {
+      const day = prompt('Enter day').toLowerCase();
+      const time = prompt('Enter time');
+
+      const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const dayIndex = days.indexOf(day);
+      if (dayIndex === -1) {
+        alert('Invalid day');
+        return;
+      }
+
+      const [h, m, s] = time.split(':').map(Number);
+      const now = new Date();
+      fakeTime = new Date(now);
+      fakeTime.setHours(h, m, s, 0);
+      fakeTime.setDate(now.getDate() - now.getDay() + dayIndex);
+      fakeTime.setAt = Date.now();
+      testMode = true;
+    }
+
+    if (e.key.toLowerCase() === 'r') {
+      testMode = false;
+      fakeTime = null;
+    }
+  });
+    setInterval(updateTime, 1000);
+    updateTime();
+  </script>
+</body>
+</html>
